@@ -21,7 +21,7 @@ char <- read_html(url) %>%
   html_text()
 
 # extract screen times ----
-screen_regex <- "([A-Z ]+: )*[A-Z ]+ <([0-9]+)*(:[0-9]+)*>"
+screen_regex <- "([A-Z ]+: )*[A-Z ]+ (\\([0-9]{4,4}\\) )*<([0-9]+)*(:[0-9]+)*>"
 screen_times <- stri_extract_all_regex(html_text(doc),screen_regex)
 
 
@@ -29,6 +29,7 @@ screen_times <- stri_extract_all_regex(html_text(doc),screen_regex)
 length_list <- map(screen_times,length) %>% unlist()
 movie <- map(screen_times,function(x) word(x,1,sep="<")) %>% 
   unlist %>% str_trim()
+movie[7] <- "ROGUE ONE"
 time   <- map(screen_times,function(x) stri_extract_last_regex(x,"(?<=<)(.*?)(?=>)") )  %>% unlist
 
 times_df <- tibble(character=rep(char,length_list),movie=movie,time=time)
@@ -69,9 +70,10 @@ times_df %>%
         plot.caption = element_text(color="grey"))+
   guides(fill = guide_legend(reverse=T))+
   labs(x="",y="Screen time (Minutes)",
-       title="Screen time of Star Wars characters",caption="schochastics.net")
+       title="Screen time of Star Wars characters",caption="schochastics.net")+
+  guides(fill=guide_legend(nrow=3,byrow=TRUE,reverse = T))
 
-ggsave("time_character.png",height=12,width=5)
+ggsave("time_character.png",height=7,width=8)
 
 #most screen time per season ----
 times_df %>% 
